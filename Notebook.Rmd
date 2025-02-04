@@ -1,0 +1,179 @@
+---
+title: "Notebook"
+subtitle: "Introduction aux modèles économétriques avec le Machine Learning"
+author: "Agossou M. YOMAKOU"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    number_section: true
+header-includes:
+  - \usepackage{float}
+  - \usepackage{amsthm}
+  - \usepackage{mdframed}
+  - \newmdenv[linecolor=black, linewidth=1pt, frametitle=Théorème]{thmBox}
+---
+
+\maketitle
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.5\textwidth]{"C:/Users/HP/Pictures/fgses.png"}
+\end{figure}
+
+\newpage
+
+\tableofcontents{Table de Matière}
+
+\newpage
+
+# Introduction and Overview {.unnumbered}
+
+Nous somme dans l'ère des Big data. Par exemple, il y a environ 40 milliards de pages web indexées ; 100 heures de vidéo sont téléchargées sur YouTube chaque minute ; les génomes de milliers de personnes, dont chacun a une longueur de $3,8.10^9$ paires de bases, ont été séquencés par différents laboratoires.
+
+Ce déluge de données nécessite des méthodes automatisées d'analyse des données, ce que permet le Machine Leaning. En particulier, nous définissons l'apprentissage automatique comme un ensemble de méthodes capables de détecter automatiquement des schémas dans les données, puis d'utiliser les schémas découverts pour prédire les données futures ou pour prendre d'autres types de décisions dans des conditions d'incertitude. L'apprentissage automatique est généralement divisé en deux types principaux. Dans l'approche prédictive ou d'apprentissage supervisé, l'objectif est d'apprendre une correspondance entre les entrées $x$ et les sorties $y$, étant donné un ensemble étiqueté de paires entrée-sortie $\mathcal{D} = \{(x_i;y_i)\}_{i=1}^N$. Ici, $D$ est appelé l'ensemble d'apprentissage et $N$ est le nombre d'exemples d'apprentissage. La forme de la sortie ou **variable de réponse** peut en principe être quelconque, mais la plupart des méthodes supposent que $y_i$ est une variable **catégorielle** ou **nominale** d'un ensemble fini, $y_i \in \{1, \cdots,C\}$, ou $y_i$ est un scalaire à valeur réelle. Lorsque $y_i$ est catégorique, le problème est appelé **classification** ou **reconnaissance de patrons**, et lorsque $y_i$ est à valeurs réelles, le problème est appelé **régression**.
+
+Le deuxième grand type d'apprentissage automatique est l'approche **descriptive** ou **d'apprentissage non supervisé**. Dans ce cas, nous ne recevons que des données d'entrée, $\mathcal{D}=\{(x_i\}_{i=1}^N$, et l'objectif est de trouver des « modèles intéressants » dans les données. C'est ce que l'on appelle parfois la **découverte de connaissances**. Il s'agit d'un problème beaucoup moins bien défini, car on ne nous dit pas quels types de modèles rechercher, et il n'y a pas de mesure d'erreur évidente à utiliser (contrairement à l'apprentissage supervisé, où l'on peut comparer notre prédiction de $y$ pour un $x$ donné à la valeur observée).
+
+Une référence classique est [Hastie, Tibshirani et Friedman (2008)](https://www.sas.upenn.edu/~fdiebold/NoHesitations/BookAdvanced.pdf). Les manuels d'introduction comprennent [James, Witten, Hastie et Tibshirani (2013)](https://static1.squarespace.com/static/5ff2adbe3fe4fe33db902812/t/6009dd9fa7bc363aa822d2c7/1611259312432/ISLR+Seventh+Printing.pdf) et Efron et Hastie (2017). Pour les traitements théoriques, voir [Bühlmann et van der Geer (2011)](https://www.stat.ntu.edu.tw/download/%E6%95%99%E5%AD%B8%E6%96%87%E4%BB%B6/bigdata/Statistics%20for%20High-Dimensional%20Data.pdf). Pour une analyse de l'apprentissage automatique en économétrie, voir [Belloni, Chernozhukov et Hansen(2014a)](https://arxiv.org/pdf/1201.0224 "link") , [Mullainathan et Spiess(2017)](https://pubs.aeaweb.org/doi/pdfplus/10.1257/jep.31.2.87#page=14.41),[Athey et Imbens(2019)](https://www.annualreviews.org/content/journals/10.1146/annurev-economics-080217-053433),et [Belloni,Chernozhukov, Chetverikov, Hansen et Kato (2021)](https://arxiv.org/pdf/1806.01888).
+
+# Big Data, Haute Dimensionnalité et Machine Learning
+
+-   **Big Data** 
+
+Généralement utilisé pour décrire des ensembles de données exceptionnellemnt volumineux et/ou complexes par rapport aux applications traditionnelles. La définition du terme "*grand*" varie selon la discipline et l'époque, mais il s'agit généralement d'ensembles de données comportant de milloins de d'observations. Ces ensembles peuvent provenir, en économie, des données de recensement des ménages, des dossier administartifs des gouvernements et des données des scanners des supermachés. Le stockage, la transmission et le calcul sont quelques uns des défis associés aux données volumineux.
+
+-   **Haute dimension** 
+
+Généralement utrilisée pour décrire des ensembles de données comportant un nombre anormalement élevé de variables. là encore la définition de "*grand*" varie d'une application à l'autre, mais il s'agit générallement de centaines ou de milliers de variables. Dans la littérature, la "haute dimensionnalité" est utilisée spécifiquement dans le contexte où $p>>n$, ce qui signifie que le nombre de variables $p$ dépasse largement le nombre d'observations $n$.
+
+
+-   **Machine learning**
+
+Généralement utilisé pour décrire un ensemble d'approches algorithmiques de la statistique. Les méthodes sont principalement axées sur la prediction de points dans des contextes et dont la structure est inconnue. Les méthodes de Machine Learning ou d'apprentissage automatique permettent également d'utiliser  des échantillons de grande taille, et un nombre de variables et une forme structurelle inconnue. Le marching learning englobe un ensemble large et diversifié d'outils pour une variété de contextes, y compris l'**aprentissage supervisé** (règle de prédiction pour $Y$ étant donné $X$ en haute dimension), l'**apprentissage non supervisé** (découvert de la structure parmi $X$ en haute dimension) et la **classification** (analyse de choix discret avec des predicteurs en haute dimension).
+
+Dans le cadre de ce cours, nous nous concentrerons sur l'apprentissage supervisé, car il s'agit d'une extension naturelle de la régression linéaire. <!-- Si le temps le permet on peut discuter rapidement de la classification !-->
+
+En économétrie, le Machine learning peut être considéré comme "*hautement non paramétrique*". Suppososns que nous soyons intéressés par l'estimation de la moyenne conditionnelle $m(X) = \mathbb{E}[Y\mid X]$ lorsque la forme de $m(X)$ est inconnue. L'analyse non paramétrique suppose généralement que $X$ est de faible dimension. En revanche, le Machine learning peut autoriser des centaines, voire des milliers de régresseurs dans X et ne nécessite pas d'informations préalables sur les régresseurs les plus pertinents. Des liens entre l'estimation non paramétrique, la sélection de modèles et les méthodes de Machine learning apparaissent lors de la sélections des paramètres par validation croisée et de l'évaluation par accurité de prédiction hors échantillon.
+
+<!-- La sélection des paramètres par validation croisée est une méthode utilisée en apprentissage automatique pour choisir les paramètres optimaux d’un modèle (hyperparamètres). Ces paramètres peuvent inclure des éléments comme la régularisation, le nombre de voisins dans un modèle k-NN, ou encore le degré d'un polynôme dans une régression polynomiale.La sélection des paramètres par validation croisée est un outil puissant pour s’assurer que le modèle est bien configuré et qu’il généralisera correctement sur des données inédites. C'est une façon intelligente de tester et choisir les réglages d'un modèle pour qu'il soit le plus performant possible-->
+
+<!--L'évaluation par accurité de prédiction hors échantillon c'est simplement vérifier à quel point un modèle est bon pour faire des prédictions sur des données qu'il n'a jamais vues avant.-->
+
+
+
+# Régression à haute dimension
+
+Nous connaissons le modèle de régression linéaire $Y = X \beta + e$, où $X$ et $\beta$ sont des vecteurs $p \times 1$. Dans les modèles de régression conventionnels, nous avons l'habitude de considérer que le nombre de variables $p$ est petit par rapport à la taille de l'échantillon $n$. La théorie asymptotique paramétrique traditionnelle suppose que $p$ est fixe lorsque $n \to \infty$, ce qui est généralement interprété comme impliquant que $p$ est beaucoup plus petit que $n$.
+
+La régression non paramétrique suppose généralement que $p \to \infty$ mais à un rythme beaucoup plus lent que $n$. Cela est interprété comme signifiant que $p$ est modérément grand mais toujours beaucoup plus petit que $n$. **La régression à haute dimension** est utilisée pour décrire le contexte où $p$ est très grand, y compris le cas où $p$ est plus grand que $n$. Elle comprend même le cas où $p$ est exponentiellement plus grand que $n$.
+
+Il peut sembler choquant d'envisager une application comportant plus de régresseurs que d'observations. Mais cette situation se présente dans un certain nombre de contextes.
+
+Tout d'abord, dans notre discussion sur la régression en série (chapitre 20), nous avons décrit comment une fonction de régression peut être approximée par un développement en série infinie dans les transformations de base des régresseurs sous-jacents. Exprimé comme un modèle linéaire, cela implique un modèle de régression avec un nombre infini de régresseurs. Les modèles pratiques (comme nous l'avons vu dans ce chapitre) utilisent un nombre modéré de régressions estimées, car cela permet de trouver un équilibre entre le biais et la variance. Toutefois, ces derniers modèles ne représentent pas la véritable moyenne conditionnelle (qui comporte un nombre infini de régresseurs), mais plutôt une meilleure approximation linéaire à faible dimension.
+
+De nombreuses applications économiques impliquent un grand nombre de variables binaires, discrètes et catégorielles. Un modèle de régression saturé convertit toutes les variables discrètes et catégorielles en variables binaires et inclut toutes les interactions. De telles manipulations peuvent aboutir à des milliers de régresseurs. Par exemple, dix variables binaires en interaction complète donnent $1024$ régresseurs. Vingt variables binaires en interaction totale donnent plus d'un million de régresseurs.
+
+De nombreux "grands" ensembles de données contemporains contiennent des milliers de régresseurs potentiels. De nombreuses variables peuvent être peu informatives, mais il est difficile de savoir *a priori* lesquelles sont pertinentes et lesquelles ne le sont pas.
+
+Lorsque $p > n$, l'estimateur des moindres carrés $\hat{\beta}$ n'est pas défini de manière unique puisque $X^\top X$ a un rang déficient. En outre, pour $p < n$ mais "grand", la matrice $X^\top X$ peut être quasi-singulière ou mal conditionnée, de sorte que l'estimateur des moindres carrés peut être numériquement instable et présenter une variance élevée.
+
+Par conséquent, nous nous tournons vers des méthodes d'estimation autres que les moindres carrés. Dans ce chapitre, nous examinons plusieurs méthodes d'estimation alternatives, notamment: *la régression ridge, le Lasso, le filet élastique, les arbres de régression et les forêts aléatoires*.
+
+# P-normes
+
+Pour un vecteur $a = (a_1, \cdots,a_k)'$, la p-norme $(p \ge 1)$ est:
+
+$$
+\|a\|_p= \left(\sum_{j=1}^k |a_j|^p  \right)^{1/p}.
+$$
+
+Parmi les cas particuliers important, on peut citer:
+
+-   la **norme 1**
+
+$$
+\|a\|_1= \sum_{j=1}^k |a_j|,
+$$
+
+-   la **norme 2** ou la **norme euclidienne**
+
+$$
+\|a\|_2= \left(\sum_{j=1}^k |a_j|^2  \right)^{1/2},
+$$
+
+-   la **norme infini**
+
+$$
+\|a\|_\infty= \max_{1\le j \le k} |a_j|.
+$$
+
+Nous allons également définir la **norme 0**
+
+$$
+\|a\|_0= \sum_{j=1}^k {1}{\{a_j \ne 0\}},
+$$ le nombre d'éléments non nuls.
+
+La norme p satisfait la propriété addictive suivante: *Si* $a=(a_o,a_1)$ alors
+
+$$
+\|a\|_p^p = \|a_0\|_p^p + \|a_1\|_p^p.
+$$
+
+**Quelques inégalités**
+
+-   L'inégalité de Hölder pour $1/p + 1/q =1$ est:$|a'b| \le \|a\|_p \|b\|_q$.
+
+Le cas où $p=1$ et $q =\infty$n est : $|a'b| \le \|a\|_1 \|b\|_\infty$.
+
+-   L'inégalité de Minkowski pour $p \ge 1$ est $\|a + b\| \le \|a\|_p +  \|b\|_q$.
+
+-   Les normes $p$ pour $p \ge 1$ satisfont la monotonicité des normes, en particulier : $\|a\|_1 \ge \|a\|_2 \ge \|b\|_\infty$.
+
+-   En appliquant l'inégalité de Hölder, on a également : $\|a\|_1 = \sum_{j=1}^k |a_j| 1{\{a_j \ne 0\}} \le \|a\|_2 \|a\|_0^{1/2}$.
+
+Pour discuter de la régression ridge (régression à la crête) et Lasso, nous utiliserons largement la norme 1 et la norme 2.
+
+# La régression à la crête ("Ridge regression" en Anglais)
+
+La régression Ridge est un estimateur de type rétrécissement avec des propriétés similaires mais distinctes de celles de l’estimateur de James-Stein. Deux motivations principales sous-tendent l'utilisation de la régression Ridge : réduire la collinéarité entre les variables explicatives et résoudre des problèmes inverses de grande dimension ou mal posés. Lorsque le nombre de variables explicatives $p$ est important, l'estimation des coefficients par les moindres carrés peut être instable en raison de la conditionnement faible de $X'X$. Pour pallier ce problème, Hoerl et Kennard (1970) ont proposé l’estimateur Ridge défini comme suit :
+
+$$
+\widehat\beta_{ridge} = \left(\mathbf{X'X} + \lambda \mathbf{I_p} \right) \mathbf{X'Y}
+$$
+
+où $\lambda > 0$ est un paramètre de rétrécissement.Cet estimateur est bien défini, même lorsque $p>n$, c'est-à-dire lorsque le nombre de variables explicatives dépasse le nombre d’observations. Le paramètre $\lambda$ joue un rôle clé et doit être sélectionné avec précision.
+
+<!-- Discussion sur le choix de $\lambda$ -->
+
+Une autre perspective moderne repose sur la régularisation. Lorsque $X'X$ est mal conditionnée, son inversion devient problématique. La régularisation, telle que proposée par Tikhonov (1943), consiste à pénaliser les erreurs quadratiques en ajoutant une norme quadratique des coefficients au critère :
+
+$$
+\text{SSE}_2(\beta,\lambda) = (Y -X\beta)'(Y -X\beta) + \lambda \beta' \beta = \|Y -X\beta\|_{2}^2 + \lambda \|\beta\|_{2}^2
+$$
+
+L'estimateur Ridge est obtenu en minimisant cette fonction. La pénalisation par $\lambda$ empêche les coefficients d'atteindre des valeurs trop grandes ou erratiques, assurant ainsi une solution stable.
+
+# Lasso
+
+hhf k ehekjh
+
+# Machine learning double/différencié
+
+yctldfcvyhghl:
+
+\newpage
+# Appendice
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.75\textwidth]{"fig1.png"}
+\end{figure}
+
+tables gvvghv;
+
+\newpage
+# Réferences
+
+-   Charpentier, A., Flachaire, E. & Ly, A. (2018). Econometrics and Machine Learning. *Economie et Statistique / Economics and Statistics*, 505-506, 147–169.
+-   Hansen, B. E. (2022). Econometrics. Madison, WI: University of Wisconsin.
+-   Kevin P. Murphy. (2012). Machine Learning: A probabilistic Perspective:Masachusetts Institute of Technology.
