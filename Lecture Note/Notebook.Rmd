@@ -41,7 +41,7 @@ Une référence classique est [Hastie, Tibshirani et Friedman (2008)](https://ww
 
 -   **Big Data** 
 
-Généralement utilisé pour décrire des ensembles de données exceptionnellemnt volumineux et/ou complexes par rapport aux applications traditionnelles. La définition du terme "*grand*" varie selon la discipline et l'époque, mais il s'agit généralement d'ensembles de données comportant de milloins de d'observations. Ces ensembles peuvent provenir, en économie, des données de recensement des ménages, des dossiers administartifs des gouvernements et des données des scanners des supermachés. Le stockage, la transmission et le calcul sont quelques uns des défis associés aux données volumineux.
+Généralement utilisé pour décrire des ensembles de données exceptionnellemnt volumineux et/ou complexes par rapport aux applications traditionnelles. La définition du terme "*grand*" varie selon la discipline et l'époque, mais il s'agit généralement d'ensembles de données comportant de milloins de d'observations. Ces ensembles peuvent provenir, en économie, des données de recensement des ménages, des dossiers administratifs des gouvernements et des données des scanners des supermachés. Le stockage, la transmission et le calcul sont quelques uns des défis associés aux données volumineux.
 
 -   **Haute dimension** 
 
