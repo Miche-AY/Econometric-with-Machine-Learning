@@ -45,7 +45,7 @@ Généralement utilisé pour décrire des ensembles de données exceptionnellemn
 
 -   **Haute dimension** 
 
-Généralement utrilisée pour décrire des ensembles de données comportant un nombre anormalement élevé de variables. là encore la définition de "*grand*" varie d'une application à l'autre, mais il s'agit générallement de centaines ou de milliers de variables. Dans la littérature, la "haute dimensionnalité" est utilisée spécifiquement dans le contexte où $p>>n$, ce qui signifie que le nombre de variables $p$ dépasse largement le nombre d'observations $n$.
+Généralement utilisée pour décrire des ensembles de données comportant un nombre anormalement élevé de variables. là encore la définition de "*grand*" varie d'une application à l'autre, mais il s'agit générallement de centaines ou de milliers de variables. Dans la littérature, la "haute dimensionnalité" est utilisée spécifiquement dans le contexte où $p>>n$, ce qui signifie que le nombre de variables $p$ dépasse largement le nombre d'observations $n$.
 
 
 -   **Machine learning**
