@@ -1,0 +1,545 @@
+---
+title: "Introduction aux modèles économétriques avec du Machine Learning"
+subtitle: "ECO517 | Econométrie II"
+author: "Quantitative Economics Masters in Economics Program \n \n
+            Faculty of Governance, Economic and Social Sciences \n \n
+              University Mohammed VI Polytechnic"
+institute: "Agossou M. YOMAKOU"
+date: "`r Sys.Date()`"
+output:
+  beamer_presentation:
+    slide_level: 2
+    number_section: true
+header-includes:
+  - \AtBeginSection{}
+  - \AtBeginPart{}
+  - \usepackage{float}
+  - \usepackage{amsthm}
+  - \usepackage{mdframed}
+  - \usepackage{mathrsfs}
+  - \usepackage{graphicx}
+  - \newmdenv[linecolor=black, linewidth=1pt, frametitle=Théorème]{thmBox}
+  - \titlegraphic{\includegraphics[width=6cm]{"fgses.png"}}
+---
+
+\tableofcontents{}
+
+
+# Introduction
+
+* Ere des *Big Data*
+* Une déluge de données nécessitant des méthodes automatisées d'analyse, ce que permet le Machine Learning.
+* *Machine Learning, ensemble d'approches algorithmiques de la statistique*.
+* Prédiction dans des contextes à structure inconnue et utilisation de grands échantillons.
+* **Apprentissage supervisé**, **apprentissage non supervisé** et **classification**.
+* Apprentissage supervisé, prédire $Y$ à partir de $X$ en haute dimension.
+* Apprentissage non supervisé, découvrir des structures dans $X$.
+
+
+
+
+## Introduction
+
+- Classification: analyser des choix discrets avec des prédicteurs en haute dimension.
+- En économétrie, le Machine Learning est considéré comme hautement non paramétrique : estimer $m(X) = \mathbb{E}[Y\mid X]$ sans connaître la forme $m(X)$.
+- L'analyse non paramétrique classique suppose que $X$ est de faible dimension.
+- Le Machine Learning autorise des centaines ou milliers de régresseurs sans information préalable sur leur pertinence.
+- Des liens existent entre l'estimation non paramétrique, la sélection de modèles et le Machine Learning.
+<!-- La sélection des paramètres repose sur la validation croisée et l’évaluation par la précision de prédiction hors échantillon. -->
+
+
+
+# Big Data et Haute Dimensionnalité
+
+- **Big Data**: Ensembles de données exceptionnellemnt volumineux et/ou complexes par rapport aux applications traditionnelles. Le stockage, la transmission et le calcul sont quelques uns des défis associés aux données volumineux.
+
+- **Haute dimension**: Ensembles de données comportant un nombre anormalement élevé de variables. Il s'agit générallement de centaines ou de milliers de variables. La "haute dimensionnalité" est utilisée spécifiquement dans le contexte où $p>>n$.
+
+- Pour $p > n$, $X'X$ a un rang déficient, l'estimateur des MCO, $\hat{\beta}$ n'est pas identifiable. 
+- Pour $p < n$ mais "grand", la matrice $X'X$ peut être quasi-singulière ou mal conditionnée. 
+- L'estimateur des moindres carrés peut être numériquement instable et présenter une variance élevée.
+
+
+
+# P-normes
+
+Pour un vecteur $a = (a_1, \cdots,a_k)'$, la p-norme $(p \ge 1)$ est:
+
+$$
+\|a\|_p= \left(\sum_{j=1}^k |a_j|^p  \right)^{1/p}.
+$$
+
+
+-   la **norme 1**: $$
+\|a\|_1= \sum_{j=1}^k |a_j|,
+$$
+
+-   la **norme 2** ou la **norme euclidienne**: $$
+\|a\|_2= \left(\sum_{j=1}^k |a_j|^2  \right)^{1/2}.
+$$
+
+# La régression Ridge
+## La régression Ridge
+
+La régression ridge est un estimateur de type rétrécissement introduit par Hoerl et Kennard (1970). Les motivations sous-tendent l'utilisation de la régression ridge : 
+
+- réduire la collinéarité entre les variables explicatives 
+- résoudre des problèmes inverses de grande dimension ou mal posés.
+
+**Estimateur de la régression Ridge**
+
+$$
+\widehat\beta_{ridge} = \left(\mathbf{X'X} + \lambda \mathbf{I_p} \right) \mathbf{X'Y}
+$$
+
+- $\lambda > 0$ est un paramètre de rétrécissement et doit être sélectionné avec précision.
+- Cet estimateur est bien défini, même lorsque $p>n$.
+
+## La régression Ridge
+
+- La constante $\lambda$ est un paramètre de réglage.
+- Elle résoud problème d'inversibilité, en utilisant la décomposition spectrale de $X'X$.
+
+$X'X = H'DH$ où $H$ est orthonormé et $D = diag\{r_1,\cdots, r_p\}$ est une matrice diagonale avec les valeurs propres $r_j$ de $X'X$ sur la diagonale. $$
+X'X + \lambda I_p = H'DH + \lambda H'H = H'(D + \lambda)H
+$$
+avec $\Lambda = \lambda I_p$ et des valeurs propres strictement positives $r_j + \lambda>0$.
+
+- Elles donc bornées par rapport à zéro, de sorte que $X'X + \lambda I_p$ soit de plien rang et bien conditionné.
+
+## La régression Ridge
+
+Une autre perspective moderne repose sur la régularisation (Tikhonov 1943). Lorsque $X'X$ est mal conditionnée, son inversion devient problématique. La régularisation consiste à pénaliser les erreurs quadratiques en ajoutant une norme quadratique des coefficients au critère. $$
+\text{SSE}_2(\beta,\lambda) = (Y -X\beta)'(Y -X\beta) + \lambda \beta' \beta = \|Y -X\beta\|_{2}^2 + \lambda \|\beta\|_{2}^2.
+$$
+Le minimiseur de $\text{SSE}_2(\beta,\lambda)$ est l'estimateur des moindres carrés régularisé(pénalisé).Il équivaut à l'estimateur ridge $\widehat\beta_{ridge}$. La pénalisation par $\lambda$ empêche les coefficients d'atteindre des valeurs trop grandes, assurant ainsi une solution stable.
+
+
+## La régression Ridge
+
+Une représentation duale  du problème de minimisation regularisé est le problème contraint suivant: $$
+\min_{\text{st:} \quad \beta'\beta \leq \tau} (Y -X\beta)'(Y -X\beta) \qquad \text{avec } \tau >0 .
+$$
+Le Lagrangien du problème : $L(\beta)= (Y -X\beta)'(Y -X\beta) + \lambda(\beta'\beta - \tau)$ où $\lambda$ est le multiplicateur de lagrange. 
+
+La différence pratique entre les problèmes de pénalisation et de contrainte est que dans le premier cas, vous spécifiez le paramètre ridge $\lambda$ alors que dans le second, vous spécifiez la contrainte $\tau$. Ils sont liés puisque les valeurs $\lambda$ de et de $\tau$ satisfont la relation $$
+Y'X(X'X + \lambda I_p)^{-1}(X'X + \lambda I_p)^{-1}X'Y = \tau.
+$$
+Il suffit de résoudre(numériquement) l'équation pour trouver $\lambda$ étant donné $\tau$.
+
+
+## La régression Ridge
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.475\textwidth]{"fig2.png"}
+  \caption{Solution de minimisation doublée de la régression ridge}
+\end{figure}
+\vspace{-1.5em}
+L'estimateur ridge est obtenu à l'intersection de la contrainte sphérique et du contour des moindres carrés. La régression ridge suit une trajectoire influencée par la corrélation des variables.
+
+Le "chemin de Ridge" représente l'évolution des coefficients lorsque $\lambda$ varie de $0$ à $+\infty$. Pour $\lambda = 0$, l'estimateur ridge coïncide avec les moindres carrés et se rapproche progressivement de l'origine à mesure que $\lambda$ augmente.
+
+
+## La régression Ridge
+
+Il est facile de généraliser la régression ridge pour autoriser différentes pénalités sur différents groupes de régresseurs. Prenons le modèle : $$Y= X_1'\beta_1 + \cdots + X_G'\beta_G + e$$
+et minimisons le $SSE$ sous contraite de la pénalité $$
+\lambda_1\beta_1'\beta_1 + \cdots + \lambda_G\beta_G'\beta_G.$$
+La solution est $$
+\widehat\beta_{ridge} = \left(\mathbf{X'X} + \Lambda \right)^{-1} \mathbf{X'Y} \quad \text{où} \quad \Lambda = diag\{\lambda_1I_{p_1}, \cdots, \lambda_GI_{p_G} \}.
+$$
+
+**dim(X)** ?
+
+Cela permet une certaine flexibilité dans la pénalité des coefficients (plus ou moins que d'autres). En particulier:
+
+- avec $\lambda_1 = 0$ : un groupe de coefficients n'est donc pas pénalisé,
+- avec $G=2$, les coefficients sont répartis en deux groupes : pénalisés et non pénalisés.
+
+
+## La régression Ridge
+
+L'estimateur de régression ridge leave-one-out, les erreurs de prédiction et le critère de validation croisée sont: $$
+\begin{aligned}
+\widehat\beta_{-i}(\lambda) &= \left(\sum_{j\ne i}X_jX_j' + \Lambda \right)^{-1}\left(\sum_{j\ne i}X_jY_j\right) \\
+\tilde e_i(\lambda) &= Y_i - X_i'\widehat\beta_{-i}(\lambda) \\
+\text{CV}(\lambda) &= \sum_{i=1}^n \tilde e_i(\lambda)^2.
+\end{aligned}
+$$
+Le paramètre de ridge $\lambda$ sélectionné par validation croisée, minimise $\text{CV}(\lambda)$. L’estimateur de ridge par validation croisée est calculé en utilisant $\widehat \lambda$.
+
+**\textcolor{red}{\underline{NB} :}** En pratique, il peut être difficile de minimiser $\text{CV}(\lambda)$. Le minimum peut se produire à $\lambda = 0$, à $\lambda = + \infty$, ou il peut y avoir plusieurs minima locaux.
+
+
+## La régression Ridge
+
+\begin{thmBox}[frametitle= Theorem 29.1 (BH Econ)] La prédiction des erreurs de régression ridge en validation croisée leave-one-out est
+$$
+\tilde e_i(\lambda) = \left(1- X_i' \left(\mathbf{X'}\mathbf{X} + \Lambda\right)^{-1} X_i \right)^{-1}\widehat e_i(\lambda) 
+$$
+où $\widehat e_i(\lambda) = Y_i - X'\widehat\beta_{ridge}$ sont les résidus de la régression ridge.
+\end{thmBox}
+
+Alternativement, la sélection de $\lambda$ consiste à minimiser le critère de Mallows,$$
+\text{C}(\lambda) = \sum_{i=1}^n \widehat e_i(\lambda)  + 2\widehat \sigma^2 \text{tr}(\left(\mathbf{X'}\mathbf{X} + \Lambda\right)^{-1} \left(\mathbf{X'X} \right)) 
+$$
+où $\widehat \sigma^2$ est l'estimateur de la variance issu des MCO.
+
+## La régression Ridge
+
+En considérant un modèle de régression linéaire $$Y = X'\beta + e$$
+avec $\mathbb{E}[e\mid X] = 0$, nous avons, $$
+\text{biais}\left[\widehat\beta_{ridge} \mid \mathbf{X}\right] = -\lambda \left(\mathbf{X'X} + \lambda \mathbf{I_p} \right)^{-1} \beta.
+$$
+De plus avec un échantillon aléatoire, $$
+\mathbb{V}\left[\widehat\beta_{ridge} \mid \mathbf{X}\right] = \left(\mathbf{X'X} + \lambda \mathbf{I_p} \right)^{-1} \left(\mathbf{X'DX}\right)\left(\mathbf{X'X} + \lambda \mathbf{I_p} \right)^{-1}
+$$
+où $\mathbf{D} = diag\{\sigma^2(X_1), \cdots, \sigma^2(X_n)\}$ et $\sigma^2(x) = \mathbb{E}[e^2\mid X]$.
+
+Nous pouvons mesurer l'efficacité de l'estimation par la matrice de l'erreur quadratique moyenne (MSE), $$
+\text{mse}\left[\widehat\beta \mid \mathbf{X}\right] = \mathbb{E}\left[(\hat\beta - \beta)(\hat\beta - \beta)' \mid X \right].
+$$
+
+
+## La régression Ridge
+
+\begin{thmBox}[frametitle= Theorem 29.2 (BH Econ)] Dans le modèle de régression linéaire, si $0<\lambda<2\underline{\sigma}^2/\beta'\beta$,
+
+$$
+\text{mse}\left[\widehat\beta_{ridge} \mid \mathbf{X}\right] < \text{mse}\left[\widehat\beta_{ols} \mid \mathbf{X}\right].
+$$
+\end{thmBox}
+
+Ce théorème montre que l'estimateur ridge domine l'estimateur MCO sous certaines conditions. Cela est vrai quelle que soit la dimension de $\beta$. Étant donné que la borne supérieure $2\underline{\sigma}^2/\beta'\beta$ est inconnue, il n'est cependant pas clair si une régression ridge réalisable domine les MCO.
+
+## La régression Ridge
+
+- Estimateur de la variance de l'estimateur ridge, en utilisant l'analogue HC3$$
+\widetilde V_{\widehat\beta} = \left(\mathbf{X'X} + \lambda \mathbf{I_p} \right)^{-1} \left(\sum_{i=1}^n X_iX_i'\widetilde e_i(\lambda)^2 \right)\left(\mathbf{X'X} + \lambda \mathbf{I_p} \right)^{-1}
+$$
+où $\widetilde e_i(\lambda)$ sont les erreurs de prédiction de la régression ridge.
+
+- Si les régresseurs sont hautement clairsemés, il est plus prudent d'utiliser l'estimateur homoscédastique$$
+\widetilde V_{\widehat\beta}^0 = \widetilde \sigma_i^2(\lambda) \left(\mathbf{X'X} + \lambda \mathbf{I_p} \right)^{-1} \left(\mathbf{X'X} \right)\left(\mathbf{X'X} + \lambda \mathbf{I_p} \right)^{-1}
+$$
+avec $\widetilde \sigma_i^2(\lambda) = n^{-1}\sum_{i=1}^n \widetilde e_i(\lambda)^2$.
+
+## La régression Ridge
+
+- L'estimateur ridge est explicitement biaisé, ce qui affecte l'interprétation des erreurs standard et des intervalles de confiance.
+- Les intervalles de confiance classiques ont une couverture insuffisante en raison du biais.
+- Une solution consiste à interpréter l'estimateur ridge comme en régression non paramétrique.
+- Les estimateurs et intervalles de confiance sont valides pour les projections pseudo-vraies, $\beta^* =\left(\mathbf{X'X} + \lambda \mathbf{I_p} \right)^{-1} \mathbf{X'X}\beta$.
+- Pour une inférence asymptotiquement exacte sur les vrais coefficients, le paramètre ridge $\lambda$ pourrait être sélectionné de manière à satisfaire $\lambda = o(\sqrt{n})$ de manière analogique à une bande passante de sous-lissage en régression non paramétrique.
+
+## La régression Ridge
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=1.05\textwidth]{"fig3.png"}
+  \caption{Estimation des rendements de l'expérience par les moindres carrés et la régression ridge}
+\end{figure}
+
+# La régression Lasso
+## La régression Lasso
+
+La régression **Lasso** (**Least Absolute Shrinkage and Selection Operator**) proposée par Tibshirani (1996), est un cas de modèle de régression qui  minimise la somme des erreurs quadratiques plus une pénalité en *norme 1*. $$
+\text{SSE}_1(\beta,\lambda) = (Y -X\beta)'(Y -X\beta) + \lambda \sum_{j=1}^p |\beta_j| = \|Y -X\beta\|_{2}^2 + \lambda \|\beta\|_{1}^2
+$$
+L'estimateur Lasso est le minimiseur de cette fonction $$
+\widehat\beta_{\text{Lasso}} = \arg\min_\beta \text{SSE}_1(\beta,\lambda).
+$$
+Le problème de minimisation du Lasso possède un problème de minimisation dual sous contrainte. $$
+\widehat\beta_{\text{Lasso}} = \arg\min_{\|\beta\|_1\le \tau} \text{SSE}_1(\beta,\lambda).
+$$
+qui possède des conditions du premier ordre : $-2X_j'(Y - X\beta) + \text{sgn}(\beta_j)=0$
+
+
+## La régression Lasso
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{"fig4.png"}
+  \caption{Solution de minimisation duale du Lasso}
+\end{figure}
+\vspace{-1.5em}
+En général, le chemin de solution est linéaire par segments jusqu'à ce qu'un coefficient atteigne zéro, auquel cas ce coefficient est éliminé. Dans cet exemple particulier, le chemin de solution montre que $\beta_2$ augmente tandis que $\beta_1$ diminue. Ainsi, bien que Lasso soit un estimateur de rétrécissement, il ne réduit pas les coefficients individuellement de manière monotone.
+
+
+
+## La régression Lasso
+
+Un cas où nous pouvons calculer explicitement les estimations Lasso est lorsque les régresseurs sont orthogonaux. Supposons que $X'X = I_p$. Alors, la condition du premier ordre pour la minimisation se simplifie en
+$$
+-2\left(\widehat\beta_{\text{ols},j} - \widehat\beta_{\text{Lasso},j} \right) + \lambda \text{sgn}(\widehat\beta_{\text{Lasso},j}) = 0
+$$
+qui a la solution explicite
+$$
+\widehat\beta_{\text{Lasso},j} = 
+\begin{cases}
+\widehat\beta_{\text{ols},j} - \lambda/2 \quad &\text{si}\quad\widehat\beta_{\text{ols},j} > \lambda/2 \\
+0 &\text{si}\quad |\widehat\beta_{\text{ols},j}| \le \lambda/2 \\
+\widehat\beta_{\text{ols},j} + \lambda/2 \quad &\text{si}\quad\widehat\beta_{\text{ols},j} < - \lambda/2 .
+\end{cases}
+$$
+Cette estimation Lasso est une transformation continue de l'estimation des moindres carrés. Pour de petites valeurs de l'estimation des moindres carrés, l'estimation Lasso est fixée à zéro. Pour toutes les autres valeurs, l'estimation Lasso rapproche l'estimation des moindres carrés de zéro par un facteur $\lambda / 2$.
+
+
+
+## La régression Lasso
+
+Les estimateurs Lasso et ridge sont des fonctions continues. 
+
+- Tout comme la régression ridge, le Lasso n'est pas invariant à l'échelle des régresseurs. Si l'on redimensionne un régresseur, la pénalité prend un sens différent. 
+- Il est donc important de standardiser les régresseurs de manière appropriée avant d'appliquer le Lasso. Il est courant de mettre à l'échelle toutes les variables pour qu'elles aient une moyenne nulle et une variance unitaire.
+
+- Le Lasso n'est également pas invariant aux rotations des régresseurs. 
+
+Par exemple, le Lasso sur $(X_1, X_2)$ n'est pas le même que le Lasso sur $(X_1 - X_2, X_2)$ bien qu'ils aient des solutions des moindres carrés identiques. Cela est problématique car typiquement il n'existe pas de spécification par défaut.
+
+
+
+## La régression Lasso
+
+- La pénalité $\lambda$ joue un rôle clé dans l'estimation Lasso, influençant le nombre de variables sélectionnées. 
+- À mesure que $\lambda$ augmente, le modèle devient plus parcimonieux en excluant davantage de variables. 
+- La validation croisée en $K$ plis est la méthode standard pour choisir $\lambda$, avec $K = 10$ comme valeur par défaut. 
+- Minimiser le critère de validation croisée favorise une bonne précision de prévision, mais pas nécessairement une inférence précise. 
+- La règle "1se" sélectionne le modèle le plus parcimonieux parmi ceux proches du minimum du critère CV. 
+- Le critère CV est sensible à l'ordonnancement aléatoire des données, nécessitant une graine fixe pour la reproductibilité. 
+
+
+
+# Elastic Net 
+Il s'agit d'un compromis entre la régression ridge et la régression Lasso. 
+En prenant une moyenne pondérée des pénalités, on obtient le critère **Elastic Net** :$$
+\text{SSE}(\beta,\lambda,\alpha) = (Y -X\beta)'(Y -X\beta)  + \lambda \left(\alpha \| \beta\|_2^2 + (1-\alpha) \|\beta\|_1 \right)
+$$
+
+avec un poids $\alpha$ tel que $0 \leq \alpha \leq 1$.
+
+- Pour de petites valeurs positives de $\alpha$, les ensembles de contraintes ressemblent à des versions « arrondies » des ensembles de contraintes du Lasso.
+- Les paramètres $(\alpha, \lambda)$ sont sélectionnés par minimisation conjointe du critère de validation croisée en $K$ groupes.
+
+
+# Post-Lasso
+## Post-Lasso
+
+L'estimateur **Lasso** sélectionne simultanément les variables et réduit les coefficients introduisant un biais dans l'estimation. Ce biais peut être réduit en appliquant la méthode des **moindres carrés après la sélection par Lasso** connu sous le nom d'**estimateur Post-Lasso**.  
+
+La procédure se déroule en **deux étapes** : 
+
+1. Estimer le modèle $Y = X\beta + e$ par **Lasso**, $\beta_S$ 
+2. Estimer les coefficients $\beta_S$ par **moindres carrés** :  $$
+\hat{\beta}_S = (X_S'X_S)^{-1} X_S' Y
+$$
+avec $X_S$ l'ensemble des variables dans $X$ qui ont des coefficients non nuls dans $\hat \beta_{\text{Lasso}}$.
+
+Cet estimateur est appelé **estimateur des moindres carrés Post-Lasso**.  
+
+## Post-Lasso
+
+- [Belloni et Chernozhukov (2013)](https://arxiv.org/pdf/1001.0188) ont fourni des conditions sous lesquelles l'estimateur Post-Lasso **converge au même taux** que l'estimateur Lasso.
+
+- L'estimateur Post-Lasso **équivaut exactement** à un estimateur de sélection, transformant les coefficients estimés par moindres carrés à l'aide d'une **fonction de seuil dur**, pour des **régresseurs sont orthogonales**,. 
+
+
+<!-- Un estimateur de sélection post-modèle désigne une méthode d'estimation qui prend en compte le fait qu'un modèle a été sélectionné à partir d'un ensemble de modèles candidats. Cela est crucial car ignorer le processus de sélection peut biaiser les estimations et sous-estimer l'incertitude des coefficients. -->
+<!-- Deux régressions sont dites orthogonales si leurs erreurs sont non corrélées. -->
+<!-- Une fonction de seuil dur (ou hard thresholding function) est une fonction qui annule toutes les valeurs inférieures à un certain seuil et conserve uniquement celles qui le dépassent. Elle est souvent utilisée en traitement du signal, en statistiques et en apprentissage automatique, notamment pour le seuillage des coefficients d'ondelettes ou la régularisation de modèles. -->
+
+
+
+# Double Selection Lasso
+
+## Double Selection Lasso
+
+- L'inférence post-estimation est difficile avec la plupart des estimateurs de Machine Learning. 
+
+- Considérons le modèle linéaire :$$
+Y = D \theta + X'\beta + e \tag{1}
+$$
+$\mathbb{E}[e \mid D, X] = 0$ où $Y$ et $D$ sont scalaires et $X$ est un vecteur $p \times 1$.
+
+- La variable $D$ est l'objet principal de l’étude, tandis que $X$ représente les variables de contrôle.<!-- L’objectif est d’inférer sur $\theta$.-->
+
+- Si on estime ce modèle par post-Lasso en ne pénalisant que $\beta$, on sélectionne les variables de $X$ et on réalise une régression des moindres carrés de $Y$ sur $D$ et les variables sélectionnées de $X$.
+
+- Belloni, Chernozhukov et Hansen (2014b) montrent qu’une meilleure précision de la couverture peut être obtenue si $X$ est inclus dans la régression (1) dès lors qu’il est corrélé à $D$. 
+
+## Double Selection Lasso
+
+Cela conduit à la stratégie dite de **double sélection**. 
+
+On commence par spécifier une équation auxiliaire pour $D$:
+$$
+D = X'\gamma + V \tag{2}
+$$
+$\mathbb{E}[V \mid X] = 0$
+
+On peut écrire une forme réduite pour $Y$:
+$$
+Y = X'\eta + U \tag{3}
+$$
+$\mathbb{E}[U \mid X] = 0$ où $\eta = \beta + \gamma \theta$ et $U = e + V\theta$
+
+L'algorithme de double sélection proposé applique la sélection de modèle séparément aux équations $(2)$ et $(3)$, prend l'union des régresseurs sélectionnés, puis estime l'équation $(1)$ par MCO en utilisant ces régresseurs. Cette méthode garantit qu'une variable $X$ est incluse si elle est pertinente pour la régression $(1)$ ou si elle est corrélée avec $D$.
+
+
+
+## Double Selection Lasso
+
+L’algorithme **double-selection** recommandé par Belloni, Chernozhukov et Hansen (2014b) suit ces étapes :  
+
+1. Estimer l’équation auxiliaire $(2)$ par Lasso et noter $X_1$ les variables sélectionnées.  
+2. Estimer l’équation réduite $(3)$ par Lasso et noter $X_2$ les variables sélectionnées.  
+3. Définir $\tilde X = X_1 \cup X_2$, soit l’union des variables sélectionnées dans les deux équations.  
+4. Réaliser une régression de $Y$ sur $(D, \tilde X)$ pour obtenir l’estimateur **double-selection** $\hat \theta_{DS}$.  
+5. Calculer une erreur standard robuste à l’hétéroscédasticité pour $\hat \theta_{DS}$.
+
+
+## Double Selection Lasso
+
+
+- Belloni, Chernozhukov et Hansen (2014b) montrent que sous une structure de parcimonie approximative, l’estimateur $\hat \theta_{DS}$ est **asymptotiquement normal**, et son **t-ratio** suit une loi normale standard.
+
+- Les méthodes d’inférence conventionnelles sont donc valides.  
+
+- L’idée clé est que la sélection via Lasso dans les deux équations garantit que toutes les variables pertinentes sont incluses, évitant ainsi le biais de sélection.
+
+- L'avantage principal de l'estimateur de double sélection réside dans sa simplicité et sa structure intuitive claire.
+
+  
+# Post régularisation Lasso
+## Post régularisation Lasso
+Une amélioration potentielle du Lasso à double sélection est l'estimateur de Lasso post-régularisation proposé par Chernozhukov, Hansen et Spindler (2015). Nous commençons par transformer l'équation structurelle $(1)$ afin d'éliminer la composante de grande dimension.
+$$
+Y - \mathbb{E}[Y\mid X] = (D - \mathbb{E}[D\mid X])\theta + e.
+$$
+
+Cette transformation élimine le régresseur $X$ ainsi que le coefficient de grande dimension $\beta$. Les modèles $(2)$ et $(3)$ spécifient $\mathbb{E}[Y\mid X]$ et $\mathbb{E}[D\mid X]$ comme des fonctions linéaires de $X$. En substituant ces expressions, nous obtenons :  
+
+$$
+Y - X'\eta = (D - X'\gamma)\theta + e. \tag{4}
+$$
+
+## Post régularisation Lasso
+
+Si $\eta$ et $\gamma$ étaient connus, le coefficient $\theta$ pourrait être estimé par MCO. Etant inconnus, ils doivent être estimés. 
+
+L'estimateur recommandé par Chernozhukov, Hansen et Spindler (2015) est le suivant :  
+
+1. **Estimation de $(2)$ par Lasso ou post-Lasso** avec le paramètre de Lasso $\lambda_1$. Soit $\hat{\gamma}$ l'estimateur des coefficients et $\hat V_i = D_i - X_i' \hat{\gamma}$ le résidu.  
+2. **Estimation de $(3)$ par Lasso ou post-Lasso** avec le paramètre de Lasso $\lambda_2$. Soit $\hat{\eta}$ l'estimateur des coefficients et $\hat U_i = Y_i - X_i' \hat{\eta}$ le résidu.  
+3. **Estimation finale** : Soit $\hat \theta_{PR}$ le coefficient des moindres carrés ordinaires (OLS) de la régression de $\hat U$ sur $\hat V$.  
+4. **Calcul de l'erreur standard** : Une erreur standard conventionnelle (hétéroscédastique) est calculée pour $\hat \theta_{PR}$. 
+
+
+## Post régularisation Lasso
+
+* La condition de moment pour $\theta$, basée sur l'équation $(1)$, est :  
+
+$$
+m(\theta, \beta) = \mathbb{E}[D(Y - D\theta - X'\beta)] = 0.
+$$
+
+* Sa sensibilité par rapport à $\beta$ est donnée par sa dérivée évaluée aux vrais coefficients.
+* L'inclusion ou l'exclusion de la variable $X$ a un impact sur la condition de moment pour $\theta$ et donc sur sa solution.
+* En revanche, la condition de moment pour $\theta$ basée sur l'équation $(4)$ est :
+
+$$
+\begin{aligned}
+m_{PR}(\theta, \beta) &= \mathbb{E}[(D - X'\gamma)(Y - X'\eta - (D - X'\gamma)\theta)] \\
+m_{PR}(\theta, \beta)&= \mathbb{E}[(D - X'\gamma)(Y - D\theta - X'\beta)].
+\end{aligned}
+$$
+
+* Sa sensibilité par rapport à $\beta$ est égal à zéro et donc non corrélé avec $X$.
+
+## Post régularisation Lasso
+
+* L'avantage de l'estimateur post-régularisation $\hat \theta_{PR}$ par rapport à l'estimateur à double sélection $\hat \theta_{DS}$ est *l'efficacité*.
+* L'estimateur post-régularisation utilise uniquement les composantes pertinentes de $X$ pour centrer séparément $Y$ et $D$,
+* L'estimateur post-régularisation permet de distinguer ces effets et de les estimer séparément.
+* L'estimateur à double sélection utilise l'union des deux ensembles de régresseurs pour estimer $\theta$, ce qui entraîne une spécification *moins parcimonieuse*.
+* Un avantage de l'estimateur à double sélection est *la réduction du biais et une meilleure robustesse*
+
+
+# Machine learning double/différencié
+
+## Machine learning double/différencié
+
+La contribution la plus récente aux méthodes d’inférence pour le modèle $(1)$ est l’estimateur **Double/Debiased Machine Learning (DML)** de Chernozhukov, Chetverikov, Demirer, Duflo, Hansen, Newey et Robins (2018)
+
+- L’estimateur **DML** étend l’estimateur de *post-régularisation* présenté dans la section précédente en ajoutant une *technique de partitionnement des échantillons*, similaire à l’estimateur *IV à échantillons séparés* .
+- Les auteurs soutiennent que cela *réduit la dépendance entre les étapes d’estimation* et peut *améliorer les performances*.  
+
+- L’estimateur de post-régularisation commence par estimer les coefficients des modèles $(2)$ et $(3)$, puis estime le coefficient $\theta$. 
+- L’estimateur **à échantillons séparés** effectue ces étapes d’estimation en utilisant **des échantillons distincts**.  
+
+- L’estimateur **DML** va encore plus loin en utilisant une *partition en K sous-échantillons* (*K-fold partitioning*).
+
+## Machine learning double/différencié
+
+L’algorithme d’estimation est le suivant.
+
+
+1. Diviser aléatoirement l’échantillon en K sous-échantillons indépendants $A_k, k = 1, \dots, K$, d’environ même taille $n/K$.  
+2. Écrire les matrices de données pour chaque sous-échantillon sous la forme $(Y_k, D_k, X_k)$.  
+3. Pour chaque $k = 1, \dots, K$ :  
+   a) Utiliser toutes les observations sauf celles du sous-échantillon $k$ pour estimer les coefficients $\theta$ et $\gamma$ dans les équations $(2)$ et $(3)$ à l’aide de *Lasso ou post-Lasso*. Ces estimateurs exclus du pli $k$ sont notés $\hat \gamma_{-k}$ et $\hat \eta_{-k}$.  
+   b) Calculer $\hat V_k = D_k - X_k \hat \gamma_{-k}$ et $\hat U_k = Y_k - X_k \hat \eta_{-k}$. 
+
+4. Estimer $\hat \theta_{\text{DML}}$ : $\hat \theta_{\text{DML}} = \left(\sum_{k=1}^{K} \hat V_k' \hat V_k \right)^{-1} \left(\sum_{k=1}^{K} \hat V_k' \hat  U_k \right)$
+$\hat \theta_{\text{DML}} = (\hat V' \hat V)^{-1} (\hat{V}' \hat U)$  
+ 
+5. Construire une erreur standard classique (hétéroscédastique) pour $\hat \theta_{\text{DML}}$.
+
+## Machine learning double/différencié
+
+- L'avantage de l'estimateur DML par rapport à l'estimateur post-régularisation est que la séparation de l'échantillon élimine la dépendance entre les deux étapes d'estimation, réduisant ainsi le biais lié à la sélection post-modèle. 
+
+- L'estimateur est aléatoire en raison de la séparation de l'échantillon. 
+- Deux chercheurs travaillant avec le même ensemble de données, mais effectuant des séparations aléatoires différentes, obtiendront deux estimateurs distincts.
+
+- L'estimation de $\gamma$ et $\eta$ est effectuée sur des échantillons plus petits, ce qui réduit l'efficacité de l'estimation. Cependant, cet effet reste mineur si $K \ge 10$.  
+
+Quoi qu'il en soit, ces considérations suggèrent que le DML peut être particulièrement approprié dans des contextes où $n$ est grand et $K \ge 10$.  
+
+
+
+
+
+
+# Appendice
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.75\textwidth]{"fig1.png"}
+\end{figure}
+
+
+# Réferences
+
+1). Charpentier, A., Flachaire, E. & Ly, A. (2018). Econometrics and Machine Learning. *Economie et Statistique / Economics and Statistics*, 505-506, 147–169.
+
+2). Hansen, B. E. (2022). Econometrics. Madison, WI: University of Wisconsin.
+
+3). Kevin P. Murphy. (2012). Machine Learning: A probabilistic Perspective:Masachusetts Institute of Technology.
+
+4). Victor Chernozhukov, Christian Hansen, Martin Spindler. Valid Post-Selection and Post-Regularization Inference: An Elementary, General Approach. *Annual Review of Economics, Vol. 7: 649-688 (August 2015)*.	arXiv:1501.03430
+
+Vous pouvez accéder à mon Notebook pour ce cours sur mon répertoire GitHub, ainsi qu'à d'autres ressources complémentaires pour approfondir le sujet. [\textcolor{red}{\underline{link}}](https://github.com/Miche-AY/Econometric-with-Machine-Learning)
+
+[\color{blue}{\underline{DML}}](https://github.com/DoubleML)
+
+##
+
+\centering
+\Huge Merci pour l'attention !!!
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=9cm]{"Tom-And-Jerry-Transparent-File.png"}
+\end{figure}
+
