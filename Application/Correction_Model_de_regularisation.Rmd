@@ -1,0 +1,222 @@
+---
+title: "Introduction aux modèles économétriques avec du Machine Learning"
+subtitle: "Correction Méthodes de Régularisation (Ridge, Lasso, Elastic Net, Post-Lasso)"
+author: "Agossou M. YOMAKOU"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    number_section: true
+header-includes:
+  - \usepackage{float}
+  - \usepackage{amsthm}
+  - \usepackage{mdframed}
+  - \usepackage{mathrsfs}
+  - \newmdenv[linecolor=black, linewidth=1pt, frametitle=Théorème]{thmBox}
+---
+
+\maketitle
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=1\textwidth]{"C:/Users/HP/Pictures/fgses.png"}
+\end{figure}
+
+\newpage
+
+\tableofcontents{}
+
+\newpage
+
+```{r, warning=FALSE,results='hide', include=FALSE}
+library(glmnet)
+library(caret)
+library(tidyverse)
+library(elasticnet)
+```
+
+
+Q1 : Standardisation cruciale pour comparer les pénalités
+
+**Réponse** : Les méthodes sont sensibles à l'échelle des variables
+
+```{r}
+# Q2 : Standardisation
+data(Boston, package = "MASS")
+X <- scale(Boston[, -14])  # Standardisation des prédicteurs
+y <- Boston$medv           # Variable réponse non standardisée
+
+# Q3 : Découpage train/test
+set.seed(123)
+train_index <- createDataPartition(y, p = 0.7, list = FALSE)
+X_train <- X[train_index, ]
+y_train <- y[train_index]
+X_test <- X[-train_index, ]
+y_test <- y[-train_index]
+
+```
+
+# Modèle Ridge
+
+```{r, warning=FALSE}
+set.seed(123)
+# Q4 : Modèle Ridge (alpha=0)
+lambda_grid <- 10^seq(3, -2, length = 100)
+ridge <- cv.glmnet(X_train, y_train, alpha = 0, lambda = lambda_grid)
+
+# Q5 : Chemin des coefficients
+plot(ridge$glmnet.fit, xvar = "lambda", main = "Ridge - Chemin des coefficients")
+
+# Q6 : lambda optimal
+best_lambda_ridge = ridge$lambda.min
+cat("lambda optimal (Ridge):", ridge$lambda.min)
+```
+
+# Modèle Lasso
+
+```{r, warning=FALSE}
+# Q7 : Modèle Lasso (alpha=1)
+lasso <- cv.glmnet(X_train, y_train, alpha = 1, lambda = lambda_grid)
+best_lambda_lasso <- lasso$lambda.min  
+plot(lasso$glmnet.fit, xvar = "lambda", main = "Ridge - Chemin des coefficients")
+
+# Nombre de coefs nuls pour lambda=0.1
+coef_at_0.1 <- predict(lasso, type = "coefficients", s = 0.1)
+sum(coef_at_0.1[-1] == 0)  # Exclut l'intercept
+
+# Q8 : Comparaison avec VIF
+model_lm <- lm(medv ~ ., data = Boston[train_index, ])
+car::vif(model_lm)  # Forte colinéarité si VIF > 5-10
+
+```
+
+Q9 : Avantage du Lasso
+
+**Réponse** : Le Lasso élimine les variables redondantes (coefs=0), contrairement à Ridge qui ne fait que les réduire
+
+
+# Elastic Net
+```{r, warning=FALSE}
+# Q10 : Optimisation de alpha
+set.seed(123)
+enet <- train(
+  x = X_train,
+  y = y_train,
+  method = "glmnet",
+  tuneGrid = expand.grid(
+    alpha = seq(0, 1, length = 10),  # Grille pour alpha
+    lambda = lambda_grid
+  ),
+  trControl = trainControl("cv", number = 10)
+)
+
+best_alpha <- enet$bestTune$alpha
+best_lambda_enet <- enet$bestTune$lambda
+
+# La meilleure combinaison de alpha et de lambda pour l'elastic net
+enet$bestTune
+
+
+# Q11 : Nombre de variables sélectionnées
+coef_enet <- coef(enet$finalModel, s = best_lambda_enet)
+sum(coef_enet[-1] != 0)  # Variables non nulles
+```
+
+Pour avoir tout les résultats de combinaison de $\alpha$ et de $\lambda$ pour l'Elastic Net, la commande est `enet$results`. Elle afichera 
+
+
+# Post Lasso
+```{r}
+# Q12 : Variables sélectionnées par Lasso
+selected_vars <- which(coef(lasso, s = "lambda.min")[-1] != 0)
+colnames(X_train[, selected_vars])  # Affiche les noms
+
+# Q13 : Réestimation par OLS
+X_sel <- X_train[, selected_vars, drop = FALSE]
+post_lasso <- lm(y_train ~ ., data = as.data.frame(X_sel))
+summary(post_lasso)  # Comparez les coefs avec ceux du Lasso
+
+
+```
+
+# Evaluation
+```{r, warning=FALSE}
+# Q14 : Calcul des MSE
+predictions <- list(
+  Ridge = predict(ridge, s = best_lambda_ridge, newx = X_test),
+  Lasso = predict(lasso, s = best_lambda_lasso, newx = X_test),
+  ElasticNet = predict(enet, newdata = X_test),
+  PostLasso = predict(post_lasso, newdata = data.frame(X_test))
+)
+
+mse_results <- sapply(predictions, function(pred) mean((y_test - pred)^2))
+
+# Q15 : Visualisation
+ggplot(data.frame(Model = names(mse_results), MSE = mse_results), 
+       aes(x = Model, y = MSE)) +
+  geom_col(fill = "lightblue") +
+  geom_text(aes(label = round(MSE, 3)), vjust = -0.5) +
+  labs(title = "Comparaison des MSE") +
+  theme_minimal()
+
+post_coef <- coef(post_lasso)
+
+# 2. Nettoyer les noms en supprimant le préfixe
+clean_names <- gsub("X_train\\[, selected_vars\\]", "", names(post_coef))
+post_lasso_coeff <- rep(NA, ncol(X))
+for(i in seq_along(clean_names[-1])) {  # Exclure l'intercept
+  var_name <- clean_names[-1][i]
+  if(var_name %in% colnames(X)) {
+    post_lasso_coeff[which(colnames(X) == var_name)] <- post_coef[-1][i]
+  }
+}
+
+# Q16 : Comparaison des coefficients
+coef_comparison <- data.frame(
+  Variable = colnames(X),
+  Ridge = as.vector(coef(ridge, s = "lambda.min")[-1]),
+  Lasso = as.vector(coef(lasso, s = "lambda.min")[-1]),
+  ElasticNet = as.vector(coef(enet$finalModel, s = best_lambda_enet)[-1]),
+ PostLasso = post_lasso_coeff
+)
+
+coef_comparison
+```
+
+
+La comparaison des coefficients estimés par les méthodes Ridge, Lasso, ElasticNet et PostLasso met en évidence plusieurs points intéressants. Certaines variables, comme `rm` (nombre de pièces), `dis` (distance aux centres d’emploi), et `lstat` (pourcentage de population à faible statut socio-économique), ressortent systématiquement comme très influentes, avec des effets forts et stables entre les modèles. Cela confirme leur rôle déterminant dans l’explication du prix des logements. D'autres variables comme `indus` (proportion de terrains non résidentiels) sont exclues par Lasso et PostLasso, suggérant une faible pertinence prédictive ou une colinéarité avec d'autres variables. Ridge, contrairement à Lasso, conserve toutes les variables mais tend à réduire l’amplitude des coefficients, tandis que Lasso fait une sélection automatique en mettant certains à zéro. ElasticNet offre un compromis entre ces deux approches, et PostLasso affine les coefficients estimés après la sélection faite par Lasso.
+
+
+
+# Stabilité
+```{r, warning=FALSE}
+# Q17
+n_boot <- 100
+selected_counts <- matrix(0, nrow = ncol(X), dimnames = list(colnames(X), NULL))
+
+set.seed(123)
+for (i in 1:n_boot) {
+  idx <- sample(nrow(X_train), replace = TRUE)
+  boot_fit <- cv.glmnet(X_train[idx, ], y_train[idx], alpha = 1)
+  selected <- which(coef(boot_fit, s = "lambda.min")[-1] != 0)
+  selected_counts[selected] <- selected_counts[selected] + 1
+}
+
+# Fréquence de sélection
+data.frame(Variable = rownames(selected_counts), 
+           Freq = selected_counts/n_boot) %>%
+  arrange(desc(Freq))
+
+```
+
+# Interpretation
+
+Les variables les plus fiables pour la modélisation semblent être celles avec une fréquence de 1.00. Celles avec une fréquence plus faible méritent une analyse complémentaire.
+
+
+Q18 : 
+
+**Réponse**: 
+
+- Post-Lasso recalcule les coefs sans pénalité, réduisant le biais
+- Ridge préférable quand toutes les variables sont pertinentes
+

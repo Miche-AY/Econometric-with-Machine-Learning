@@ -1,0 +1,102 @@
+---
+title: "Introduction aux modèles économétriques avec du Machine Learning"
+subtitle: "Méthodes de Régularisation (Ridge, Lasso, Elastic Net, Post-Lasso)"
+author: "Agossou M. YOMAKOU"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    number_section: true
+header-includes:
+  - \usepackage{float}
+  - \usepackage{amsthm}
+  - \usepackage{mdframed}
+  - \usepackage{mathrsfs}
+---
+
+\maketitle
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=1\textwidth]{"C:/Users/HP/Pictures/fgses.png"}
+\end{figure}
+
+\newpage
+
+# Comprendre les déterminants du prix de l’immobilier dans la région de Boston{.unnumbered}
+
+Le marché immobilier est un pilier de l’économie locale et nationale. Comprendre ce qui influence le prix des logements permet non seulement de mieux cerner les dynamiques urbaines, mais aussi d’orienter les politiques publiques, notamment en matière de logement abordable, de transport, ou de fiscalité foncière.
+
+La base de données `Boston` (extrait du *U.S. Census*) recense des variables socio-économiques et environnementales de différents quartiers de la ville de Boston, et notamment le **prix médian des logements** (`medv`) notre variable cible.
+
+Dans un contexte où la montée des prix de l'immobilier alimente les inégalités et pousse certains ménages hors des centres urbains, il est crucial d’identifier les facteurs les plus déterminants de ces prix :
+
+- Est-ce la **proximité aux centres d’emploi** ?  
+- La **qualité des écoles** ?  
+- La **pollution de l’air** ?  
+- Ou encore la **densité de criminalité** dans un quartier ?
+
+
+### Objectif du TP{.unnumbered}
+
+Nous allons explorer différentes **méthodes de régularisation** (Ridge, Lasso, Elastic Net, Post-Lasso) qui permettent non seulement de **prédire efficacement les prix de l’immobilier**, mais aussi de **sélectionner les variables explicatives** les plus pertinentes - un enjeu central en économie appliquée, où les données sont souvent multicolinéaires et bruitées.
+
+Ce TP mettra l'accent sur :
+
+- la **comparaison des performances prédictives**,
+- l’**interprétabilité** des modèles,
+- la **sélection automatique de variables**, cruciale lorsque le nombre de prédicteurs augmente.
+
+# Méthodes de Régularisation (Ridge, Lasso, Elastic Net, Post-Lasso){.unnumbered}
+
+# Préparation des données
+
+1. Pourquoi est-il important de standardiser les variables avant d’utiliser Ridge, Lasso ou Elastic Net ?  
+2. Standardisez toutes les variables de la base `Boston`, avec `medv` comme variable cible ($Y$), et les autres comme variables explicatives ($X$).  
+3. Séparez les données en deux ensembles : $70\%$ pour l’entraînement $30\%$  pour le test.
+
+
+# Regression Ridge: Gérer la complexité sans trop éléminer
+
+4. Estimez un modèle Ridge avec la fonction *glmnet()*.  Quelle valeur de *$\alpha$* faut-il utiliser pour une vraie régression Ridge ?
+5. Tracez l’évolution des coefficients en fonction de *log($\lambda$)*. Que se passe-t-il lorsque la pénalisation augmente ?  
+6. Utilisez la validation croisée (`cv.glmnet()`) pour sélectionner $\lambda$. Quelle est la valeur optimale de *$\lambda$* ? Quel est son impact sur la complexité du modèle ?
+
+
+# Régression Lasso : sélectionner les variables les plus importantes
+
+7. Appliquez le Lasso avec *$\lambda = 0.1$*. Combien de variables explicatives sont entièrement exclues (coefficient nul) ?  
+8. Comparez les variables retenues par le Lasso à celles considérées comme problématiques en termes de multicolinéarité à l’aide des VIF (Variance Inflation Factors).  
+9. Pourquoi le Lasso est-il particulièrement utile dans le contexte des données immobilières avec variables corrélées ?
+
+
+# Elastic Net : trouver un équilibre entre Ridge et Lasso
+
+10. Par validation croisée, trouvez la meilleure combinaison de pénalisation (valeur optimale de *$\alpha \in [0,1]$*). Quel compromis est le plus performant ici ?  
+11. Comparez le nombre de variables sélectionnées par l’Elastic Net et le Lasso pur. Lequel semble le plus agressif en sélection ?
+
+
+# Post-Lasso : affiner les estimations après sélection
+
+12. Quelles variables ont été retenues par le Lasso ? (Affichez-les).  
+13. Réestimez un modèle OLS classique uniquement sur ces variables. Les coefficients changent-ils fortement par rapport à ceux estimés par le Lasso ?
+
+
+# Évaluation des performances et comparaison
+
+14. Calculez le MSE (Mean Squared Error) sur l’échantillon de test pour chaque méthode : Ridge, Lasso, Elastic Net et Post-Lasso.  
+15. Visualisez ces MSE dans un barplot. Quelle méthode est la plus précise en prédiction ?  
+16. Comparez les valeurs des coefficients estimés par chaque méthode dans un tableau synthétique. Quelles sont les grandes différences d’interprétation ?
+
+
+# Stabilité et interprétabilité
+
+17. Répétez le Lasso sur 100 échantillons bootstrapés. Quelles variables sont le plus souvent sélectionnées ? Qu’est-ce que cela nous apprend sur la stabilité du modèle ?  
+18. Interprétez vos résultats :
+
+- Pourquoi les coefficients du Post-Lasso diffèrent-ils de ceux du Lasso ?  
+- Dans quelle situation économique (ou structure des données) préféreriez-vous Ridge au Lasso ?
+
+
+
+
+
